@@ -1,4 +1,4 @@
-# <time> <PID> <action> <action> ...          
+# <time> <PID> <action> <action> ...         
 # for each point in time a list of actions for the same process may be specified
 # possible entires for actions are: 
 #	S for start
@@ -13,6 +13,6 @@
 25 2 W7
 60 4 S 
 60 4 R0
-70 1 R0
+70 1 R0 
 70 2 W0
 80 4 W1

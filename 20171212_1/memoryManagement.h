@@ -31,5 +31,10 @@ Boolean deAllocateProcess(unsigned pid);
 /* free the physical memory used by a process, destroy the page table		*/
 /* returns TRUE on success, FALSE on error									*/
 
+typedef struct frame_struct
+{
+	unsigned pid;
+	unsigned page;
+} frame_t;
 
 #endif  /* __MEMORY_MANAGEMENT__ */ 

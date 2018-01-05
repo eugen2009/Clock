@@ -6,6 +6,8 @@
 unsigned emptyFrameCounter;		// number of empty Frames 
 frameList_t emptyFrameList = NULL;
 frameListEntry_t *emptyFrameListTail = NULL;
+frame_t* memory;
+unsigned memoryPointer = 0;
 
 /* ------------------------------------------------------------------------ */
 /*		               Declarations of local helper functions				*/
@@ -69,6 +71,9 @@ Boolean initMemoryManager(void)
 	// mark all frames of the physical memory as empty 
 	for (int i = 0; i < MEMORYSIZE; i++)
 		storeEmptyFrame(i);
+
+	memory = malloc(MEMORYSIZE * sizeof(frame_t));
+	
 	return TRUE;
 }
 
@@ -212,6 +217,10 @@ Boolean movePageIn(unsigned pid, unsigned page, unsigned frame)
 
 	// update the simulation accordingly !! DO NOT REMOVE !!
 	sim_UpdateMemoryMapping(pid, (action_t) { allocate, pid }, frame);
+
+	memory[memoryPointer] = (frame_t){ pid, page };
+	memoryPointer = ++memoryPointer % MEMORYSIZE;
+
 	return TRUE;
 }
 
@@ -272,9 +281,19 @@ Boolean pageReplacement(unsigned *outPid, unsigned *outPage, int *outFrame)
 	unsigned pid = (*outPid); 
 	unsigned page = (*outPage);
 	int frame = *outFrame; 
+	// +++++ START OF REPLACEMENT ALGORITHM IMPLEMENTATION: GLOBAL CLOCK ++++
+	do {
+		if (processTable[memory[memoryPointer].pid].pageTable[memory[memoryPointer].page].referenced) {
+			processTable[memory[memoryPointer].pid].pageTable[memory[memoryPointer].page].referenced = FALSE;
+			memoryPointer = ++memoryPointer % MEMORYSIZE;
+		}
+		else {
+			frame = processTable[memory[memoryPointer].pid].pageTable[memory[memoryPointer].page].frame;
+			found = TRUE;
+		}
+	} while (!found);
 	
-	// +++++ START OF REPLACEMENT ALGORITHM IMPLEMENTATION: GLOBAL RANDOM ++++
-	frame = rand() % MEMORYSIZE;		// chose a frame by random
+	found = FALSE;
 	// As the initial implemetation does not have data structures that allows
 	// easy retrieval of the identity of a page residing in a given frame, 
 	// now the frame ist searched for in all page tables of all running processes
